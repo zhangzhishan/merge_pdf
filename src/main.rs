@@ -1,4 +1,4 @@
-use clap::{Parser, Arg};
+use clap::{Parser, Arg, value_parser};
 use lopdf::{Document};
 use walkdir::WalkDir;
 use std::fs::File;
@@ -8,11 +8,11 @@ use std::path::PathBuf;
 #[clap(name = "PDF Merger", about = "A tool to merge all PDFs in a given directory.")]
 struct Cli {
     /// The folder to search for PDF files. Uses the current folder if not specified.
-    #[clap(long, parse(from_os_str), default_value = ".")]
+    #[clap(long, value_parser, default_value = ".")]
     folder: PathBuf,
 
     /// The output file to save the merged PDF. Defaults to "merged_output.pdf" in the current directory.
-    #[clap(long, parse(from_os_str))]
+    #[clap(long, value_parser)]
     output: Option<PathBuf>,
 }
 
@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if path.is_file() && path.extension().map_or(false, |ext| ext == "pdf") {
             println!("Merging: {:?}", path.display());
             let mut doc = Document::load(path)?;
-            merged_document.append_document(&mut doc);
+            merged_document.add_object(&mut doc);
         }
     }
 
@@ -39,7 +39,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     merged_document.save_to(&mut output_file)?;
 
     println!("PDFs merged into {:?}", output_path.display());
-    
+
     Ok(())
 }
 
