@@ -1,7 +1,15 @@
 # Merge_PDF
+
 Merge PDF files in a folder into one PDF file.
 
+## Installation
+
+```shell
+cargo install merge_pdf
+```
+
 ## Usage
+
 ```shell
 Usage: merge_pdf.exe [OPTIONS]
 
