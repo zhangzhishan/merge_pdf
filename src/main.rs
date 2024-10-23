@@ -147,7 +147,7 @@ fn merge_pdf(documents: Vec<Document>) -> Option<Document>
             "Kids",
             documents_pages
                     .into_keys()
-                    .map(|(object_id)| Object::Reference(object_id))
+                    .map(Object::Reference)
                     .collect::<Vec<_>>(),
         );
 
