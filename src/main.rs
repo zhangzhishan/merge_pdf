@@ -1,12 +1,10 @@
-use clap::{Parser, Arg, value_parser};
+use clap::{Parser};
 use walkdir::WalkDir;
 use std::fs::File;
 use std::path::PathBuf;
-use lopdf::dictionary;
 
 use std::collections::BTreeMap;
-use lopdf::content::{Content, Operation};
-use lopdf::{Document, Object, ObjectId, Stream, Bookmark};
+use lopdf::{Document, Object, ObjectId, Bookmark};
 
 #[derive(Parser, Debug)]
 #[clap(name = "PDF Merger", about = "A tool to merge all PDFs in a given directory.")]
@@ -24,7 +22,7 @@ fn merge_pdf(documents: Vec<Document>) -> Option<Document>
 {
     // Define a starting `max_id` (will be used as start index for object_ids).
     let mut max_id = 1;
-    let mut pagenum = 1;
+    let mut page_num = 1;
     // Collect all Documents Objects grouped by a map
     let mut documents_pages = BTreeMap::new();
     let mut documents_objects = BTreeMap::new();
@@ -39,13 +37,13 @@ fn merge_pdf(documents: Vec<Document>) -> Option<Document>
         documents_pages.extend(
             doc
                     .get_pages()
-                    .into_iter()
-                    .map(|(_, object_id)| {
+                    .into_values()
+                    .map(|object_id| {
                         if !first {
-                            let bookmark = Bookmark::new(String::from(format!("Page_{}", pagenum)), [0.0, 0.0, 1.0], 0, object_id);
+                            let bookmark = Bookmark::new(format!("Page_{}", page_num), [0.0, 0.0, 1.0], 0, object_id);
                             document.add_bookmark(bookmark, None);
                             first = true;
-                            pagenum += 1;
+                            page_num += 1;
                         }
 
                         (
@@ -148,8 +146,8 @@ fn merge_pdf(documents: Vec<Document>) -> Option<Document>
         dictionary.set(
             "Kids",
             documents_pages
-                    .into_iter()
-                    .map(|(object_id, _)| Object::Reference(object_id))
+                    .into_keys()
+                    .map(|(object_id)| Object::Reference(object_id))
                     .collect::<Vec<_>>(),
         );
 
@@ -204,7 +202,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         if path.is_file() && path.extension().map_or(false, |ext| ext == "pdf") {
             println!("Merging: {:?}", path.display());
-            let mut doc = Document::load(path)?;
+            let doc = Document::load(path)?;
             documents.push(doc);
         }
     }
